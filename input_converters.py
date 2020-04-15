@@ -79,7 +79,7 @@ def ask_date_range_month_year():
     flagYear = 0
     input_val = []
     while flagMonth == 0 or flagYear == 0:
-        print("Enter week range in years (Format: Aug 2018 or Aug 2018 - Nov 2019):\n")
+        print("Enter time span (Format: Aug 2018 or Aug 2018 - Nov 2019):\n")
         user_input = input()
         input_val = split('\W+', user_input)
         input_converted = []
@@ -103,7 +103,7 @@ def ask_date_range_month_year():
 def ask_date_range_year():
     flag = 0
     while flag == 0:
-        print("Enter week range in years (2018 or 2018-2019):\n")
+        print("Enter time span (2018 or 2018-2019):\n")
         input_converted = []
         input_val = input()
         input_val = input_val.split("-")

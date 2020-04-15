@@ -1,30 +1,46 @@
 SELECT
-  userID, dateJoined, lessonDate, 80precent, shortname AS trackName,serial_number AS lessonNo,branchName, branchType, active
+userID, dateJoined, lessonDate, 80precent, shortname AS trackName,serial_number AS lessonNo, role, roleID, assignRoleDate, branchName, branchType, active
 FROM (
-	SELECT userid_connect, track_id_connect AS trackID,  FROM_UNIXTIME(timestamp, '%Y-%m-%d')  AS lessonDate, lesson_id_connect FROM lessons_followup
-	) AS lessonDateTable
-LEFT JOIN (SELECT userid_connect AS userID, FROM_UNIXTIME(date_joined_lms, '%Y-%m-%d') AS dateJoined, branch_ID AS BranchID FROM users_new) AS usersSubset
-ON   userid_connect = userID
+    SELECT userid_connect, track_id_connect AS trackID,  FROM_UNIXTIME(timestamp, '%Y-%m-%d') AS lessonDate, lesson_id_connect
+    FROM shecodes_monster_2_0.lessons_followup
+) AS lessonDateTable
 
-LEFT JOIN lessons_mapping
+LEFT JOIN (
+    SELECT userid_connect AS userID, FROM_UNIXTIME(date_joined_lms, '%Y-%m-%d') AS dateJoined, branch_ID AS BranchID
+    FROM shecodes_monster_2_0.users_new
+) AS usersSubset
+ON userid_connect = userID
+
+LEFT JOIN shecodes_monster_2_0.lessons_mapping
 ON lessons_mapping.lesson_id_connect=lessonDateTable.lesson_id_connect
 
-left JOIN
-	(
-	SELECT id AS branch_ID, short_name AS branchName, branchTypeID, branchTypes AS branchType, active
-	FROM (
-		SELECT id AS branchTypeID, branch_type AS branchTypes FROM branch_types
-		) AS Branch_Types
-	RIGHT JOIN branch
-	ON branch.branch_type=Branch_Types.branchTypeID
+left JOIN (
+    SELECT id AS branch_ID, short_name AS branchName, branchTypeID, branchTypes AS branchType, active
+    FROM (
+        SELECT id AS branchTypeID, branch_type AS branchTypes FROM shecodes_monster_2_0.branch_types
+    ) AS Branch_Types
+
+    RIGHT JOIN shecodes_monster_2_0.branch
+ON branch.branch_type=Branch_Types.branchTypeID
 ) AS Branches
 ON branch_ID=BranchID
 
-LEFT JOIN tracks
+left JOIN (
+    SELECT user_ID, shortname AS role, roleid as roleID, assignRoleDate
+FROM (
+    SELECT userid as user_ID , roleid , FROM_UNIXTIME(timemodified, '%Y-%m-%d') AS assignRoleDate FROM shecodes_shecodes.mdl_role_assignments
+) AS userRoleSubset
+
+RIGHT JOIN shecodes_shecodes.mdl_role
+ON userRoleSubset.roleid=mdl_role.id
+WHERE roleid NOT IN (8, 21, 23, 24)
+) AS roles
+ON lessonDateTable.userid_connect=user_ID
+LEFT JOIN shecodes_monster_2_0.tracks
 ON tracks.track_id_connect=lessonDateTable.trackID
-	WHERE track_category NOT IN (0,8)
-		AND track_type NOT IN (0,3)
-        AND branchTypeID NOT IN (1,9)
-        AND track_id_connect NOT IN (4,14)
-		AND active IS NOT NULL
-		AND UNIX_TIMESTAMP(lessonDate) BETWEEN UNIX_TIMESTAMP('2020-04-07') AND UNIX_TIMESTAMP('2020-04-07')
+WHERE track_category NOT IN (0,8)
+AND track_type NOT IN (0,3)
+AND branchTypeID NOT IN (1,9)
+AND track_id_connect NOT IN (4,14)
+AND active IS NOT NULL
+AND UNIX_TIMESTAMP(lessonDate) BETWEEN UNIX_TIMESTAMP('2020-04-07') AND UNIX_TIMESTAMP('2020-04-07')

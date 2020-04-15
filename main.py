@@ -9,8 +9,6 @@ import datetime as dt
 def main():
     master_ui()
 
-    print("Analysis Done!")
-
 
 
 # Make sure main cannot be called from other functions

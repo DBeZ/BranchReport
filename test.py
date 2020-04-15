@@ -1,23 +1,81 @@
-import dateutil.relativedelta as relativedelta
-import dateutil.rrule as rrule
-import datetime as dt
-import pandas as pd
+fields_final_display = "userID, dateJoined, lessonDate, 80precent, shortname AS trackName,serial_number AS lessonNo, role, roleID, assignRoleDate, branchName, branchType, active"
 
-def quarterly_reg_dates():
-    quarterly_track_opening = {
-        "May18": dt.datetime(2018, 5, 6),
-        "Aug18": dt.datetime(2018, 8, 5),
-        "Nov18": dt.datetime(2018, 11, 4),
-        "Feb19": dt.datetime(2019, 2, 3),
-        "May19": dt.datetime(2019, 5, 12),
-        "Aug19": dt.datetime(2019, 8, 4),
-        "Nov19": dt.datetime(2019, 11, 3),
-        "Mar19": dt.datetime(2020, 3, 18)
-    }
-    registration_quarterly_ending = [quarterly_track_opening[key] for key in quarterly_track_opening]
-    registration_quarterly_ending = pd.Series(registration_quarterly_ending)
-    mask = (dt.datetime(2019, 5, 12) <= registration_quarterly_ending ) & (registration_quarterly_ending <= dt.datetime(2020, 3, 18))
-    registration_quarterly_ending=registration_quarterly_ending[mask]
-    print("end test")
+fields_updating_progress = "userid_connect, track_id_connect AS trackID,  FROM_UNIXTIME(timestamp, '%Y-%m-%d') AS lessonDate, lesson_id_connect"
+table_updating_progress = "shecodes_monster_2_0.lessons_followup"
 
-quarterly_reg_dates()
+table_updating_users = "shecodes_monster_2_0.users_new"
+fields_updating_users = "userid_connect AS userID, FROM_UNIXTIME(date_joined_lms, '%Y-%m-%d') AS dateJoined, branch_ID AS BranchID"
+on_user = "userid_connect = userID"
+
+table_lessons = "shecodes_monster_2_0.lessons_mapping"
+on_lesson = "lessons_mapping.lesson_id_connect=lessonDateTable.lesson_id_connect"
+
+fields_branch_final = "id AS branch_ID, short_name AS branchName, branchTypeID, branchTypes AS branchType, active"
+fields_branches_type = "id AS branchTypeID, branch_type AS branchTypes"
+table_branch_type = "shecodes_monster_2_0.branch_types"
+table_branches = "shecodes_monster_2_0.branch"
+on_branch_type = "branch.branch_type=Branch_Types.branchTypeID"
+on_branch = "branch_ID=BranchID"
+
+fields_role_final = "user_ID, shortname AS role, roleid as roleID, assignRoleDate"
+fields_updating_roles = "userid as user_ID , roleid , FROM_UNIXTIME(timemodified, '%Y-%m-%d') AS assignRoleDate"
+table_updating_roles = "shecodes_shecodes.mdl_role_assignments"
+table_role_types = "shecodes_shecodes.mdl_role"
+on_role = "userRoleSubset.roleid=mdl_role.id"
+condition_role = "roleid NOT IN (8, 21, 23, 24)"
+on_user2 = "lessonDateTable.userid_connect=user_ID"
+
+table_track = "shecodes_monster_2_0.tracks"
+on_track = "tracks.track_id_connect=lessonDateTable.trackID"
+condition_track = "track_category NOT IN (0,8) "
+condition_track_type = "track_type NOT IN (0,3) "
+condition_branch_type = "branchTypeID NOT IN (1,9) "
+condition_track_id = "track_id_connect NOT IN (4,14) "
+condition_branch_active = "active IS NOT NULL "
+condition_registration_date_range = "UNIX_TIMESTAMP(lessonDate) BETWEEN UNIX_TIMESTAMP(%s) AND UNIX_TIMESTAMP(%s)"
+
+query = (
+    f"SELECT {fields_final_display} "
+
+    f"FROM (SELECT {fields_updating_progress} "
+    f"FROM {table_updating_progress} "
+    f") AS lessonDateTable "
+
+    f"LEFT JOIN (SELECT {fields_updating_users} "
+    f" FROM {table_updating_users} "
+    f") AS usersSubset "
+    f"ON {on_user} "
+
+    f"LEFT JOIN {table_lessons} "
+    f"ON {on_lesson} "
+
+    f"left JOIN (SELECT {fields_branch_final} "
+    f"FROM (SELECT {fields_branches_type} "
+    f"FROM {table_branch_type} "
+    f") AS Branch_Types "
+    f"RIGHT JOIN {table_branches} "
+    f"ON {on_branch_type} "
+    f") AS Branches "
+    f"ON {on_branch} "
+
+    f"left JOIN (SELECT {fields_role_final} "
+    f"FROM (SELECT {fields_updating_roles} "
+    f"FROM {table_updating_roles} "
+    f") AS userRoleSubset "
+    f"RIGHT JOIN {table_role_types} "
+    f"ON {on_role} "
+    f"WHERE {condition_role} "
+    f") AS roles "
+    f"ON {on_user2} "
+
+    f"LEFT JOIN {table_track} "
+    f"ON {on_track} "
+    f"WHERE {condition_track} "
+    f"AND {condition_track_type} "
+    f"AND {condition_branch_type} "
+    f"AND {condition_track_id} "
+    f"AND {condition_branch_active} "
+    f"AND {condition_registration_date_range} "
+)
+
+print(query)

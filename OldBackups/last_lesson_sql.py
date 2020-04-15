@@ -8,7 +8,7 @@
 # Results pickled rather than returned (in case df is very large).
 ##########################################################################
 import pandas as pd
-from OldBackups.shecodesLogin import login
+from shecodesLogin import login
 from connect_to_database import connect_to_database
 
 def last_lesson_query_by_join_date(connection, mindate, maxdate, pickelName="queryRes"):
