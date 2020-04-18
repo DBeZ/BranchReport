@@ -1,6 +1,7 @@
 import exporters
 import generators
 
+
 ## Presents menu and recives user input.
 ## Includes input verification.
 def master_manu():
@@ -25,7 +26,6 @@ def menu_select(userInput):
         weekly_report_dataframe = generators.generator_weekly_report()
         exporters.export_to_google_sheets(weekly_report_dataframe)
         # visualizators.visualize_weekly_report()
-        # TODO: Export this dataframe to google sheets
         # TODO: visualsations
     if userInput == 2:
         print("Add date weekly_calender.py (quarterly_reg_dates function)")

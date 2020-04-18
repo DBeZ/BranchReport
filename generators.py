@@ -6,6 +6,7 @@ from weekly_analysis import column_converter, remove_user_duplicates, populus_co
     activity_by_track_opening_counter, activity_by_branch_counter
 import datetime as dt
 import numpy as np
+import visualisations
 
 ## Generates attendance tab in weekly report
 def generator_weekly_report():
@@ -72,6 +73,7 @@ def generator_weekly_report():
     populus_by_weeks = populus_counter_by_weeks(data=data_converted, staff_col=fields["staff"],
                                                 activity_col=fields["lesson_date"], week_start=week_begin_list,
                                                 week_end=week_end_list)
+
     activity_by_branch = activity_by_branch_counter(data=data_converted, branch_col=fields["branch"],
                                                     activity_col=fields["lesson_date"], week_start=week_begin_list,
                                                     week_end=week_end_list)
@@ -85,6 +87,12 @@ def generator_weekly_report():
                                                                   week_start=week_begin_list,
                                                                   week_end=week_end_list)
 
+    # Output visualizations
+    visualisations.populus_and_staff(populus_by_weeks)
+    visualisations.branch_activity_heatmap(activity_by_branch)
+    visualisations.activity_by_registration(activity_by_track_opening)
+
+    # Combine all dataframes to a single one mimicking the google sheet table form
     all_results_dataframe = populus_by_weeks
     all_results_dataframe = pd.concat(
         [all_results_dataframe, pd.DataFrame(index=["** Track Opening **"], columns=populus_by_weeks.columns)],
