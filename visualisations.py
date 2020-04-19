@@ -4,6 +4,8 @@ import matplotlib
 import math
 import numpy as np
 import pandas as pd
+import exporters
+import os
 
 
 def branch_activity_heatmap(dataframe):
@@ -30,8 +32,17 @@ def branch_activity_heatmap(dataframe):
     cbar.set_ticks([0, .25, .5, .75, 1])
     cbar.set_ticklabels(['Min', '25%', '50%', '75%', 'Max'])
 
-    plt.show(block=False)
-    print("Activity by branch Heatmap Done")
+    # plt.show(block=False)
+    fig = plt.gcf()
+    figure_name = "Activity by branch Heatmap"
+    # print("Graph generated - %s" %figure_name)
+
+    if not os.path.isdir("Output_files"):
+        os.mkdir("Output_files")
+    os.chdir("Output_files")
+    plt.savefig(figure_name, bbox_inches='tight')
+    os.chdir("..")
+    return figure_name
 
 
 def populus_and_staff(dataframe):
@@ -61,16 +72,21 @@ def populus_and_staff(dataframe):
     plt.ylabel('Activity')
 
     plt.tight_layout()
-    plt.show(block=False)
-    print("Activity Stacked Bar Plot (participants, staff) Done")
+    # plt.show(block=False)
+    fig = plt.gcf()
+    figure_name = "Activity Stacked Bar Plot (participants, staff)"
+    # print("Graph generated - %s" %figure_name)
 
+    if not os.path.isdir("Output_files"):
+        os.mkdir("Output_files")
+    os.chdir("Output_files")
+    plt.savefig(figure_name, bbox_inches='tight')
+    os.chdir("..")
+    return figure_name
 
 def activity_by_registration(dataframe):
     plt.figure()
     ax = plt.gca()
-    # In case error about setting backend appears
-    # matplotlib.use('qt5agg')
-    # matplotlib.get_backend()
 
     # Get max and min values from all branches to be used in all graphs
     min_y = dataframe.min().min()
@@ -109,5 +125,14 @@ def activity_by_registration(dataframe):
     #     dataframe.iloc[k].plot.bar(ax=axes[k], rot=45)
 
     plt.tight_layout()
-    plt.show(block=False)
-    print("Activity by registration Bar Plot Done")
+    # plt.show(block=False)
+    fig = plt.gcf()
+    figure_name = "Activity by registration Bar Plot"
+    # print("Graph generated - %s" %figure_name)
+
+    if not os.path.isdir("Output_files"):
+        os.mkdir("Output_files")
+    os.chdir("Output_files")
+    plt.savefig(figure_name, bbox_inches='tight')
+    os.chdir("..")
+    return figure_name

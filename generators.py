@@ -87,10 +87,13 @@ def generator_weekly_report():
                                                                   week_start=week_begin_list,
                                                                   week_end=week_end_list)
 
+    print("Analysis Done")
+
     # Output visualizations
-    visualisations.populus_and_staff(populus_by_weeks)
-    visualisations.branch_activity_heatmap(activity_by_branch)
-    visualisations.activity_by_registration(activity_by_track_opening)
+    figure_name1 = visualisations.populus_and_staff(populus_by_weeks)
+    figure_name2 = visualisations.branch_activity_heatmap(activity_by_branch)
+    figure_name3 = visualisations.activity_by_registration(activity_by_track_opening)
+    figure_names = [figure_name1, figure_name2, figure_name3]
 
     # Combine all dataframes to a single one mimicking the google sheet table form
     all_results_dataframe = populus_by_weeks
@@ -103,7 +106,7 @@ def generator_weekly_report():
         ignore_index=False)
     all_results_dataframe = pd.concat([all_results_dataframe, activity_by_branch], ignore_index=False)
     all_results_dataframe = all_results_dataframe.fillna(" ")
-    print("Analysis Done")
+
     # TODO: Why is march20 opening empty
     # TODO: Why so few staff members
-    return all_results_dataframe
+    return all_results_dataframe, figure_names

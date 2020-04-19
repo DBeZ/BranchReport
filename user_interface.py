@@ -23,10 +23,16 @@ def master_manu():
 ## Executes actions according to user input
 def menu_select(userInput):
     if userInput == 1:
-        weekly_report_dataframe = generators.generator_weekly_report()
-        exporters.export_to_google_sheets(weekly_report_dataframe)
-        # visualizators.visualize_weekly_report()
-        # TODO: visualsations
+        result_file_name = "Weekly Report"
+        weekly_report_dataframe, fig_names = generators.generator_weekly_report()
+        exporters.export_to_google_sheets(dataframe=weekly_report_dataframe, sheets_file_name=result_file_name,
+                                          tab_name='Attendance Report')
+        k = 0
+        for fig in fig_names:
+            k += 1
+            exporters.export_figures_to_drive(figure_name=fig)
+            # exporters.insert_figure_image_to_sheet(image_file_name=fig, sheets_file_name=result_file_name, tab_name='Attendance Graphs')
+            exporters.insert_figure_image_to_slides(figure_name=fig, slides_file_name=result_file_name, page_id=k)
     if userInput == 2:
         print("Add date weekly_calender.py (quarterly_reg_dates function)")
 
