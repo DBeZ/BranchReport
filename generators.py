@@ -9,8 +9,8 @@ import numpy as np
 import visualisations
 
 ## Generates attendance tab in weekly report
-def generator_weekly_report():
-    loginFileName = "Login.txt"
+def generator_weekly_report(user_login_dict):
+    loginFileName = user_login_dict["sql_login"]
     # field names used in SQL query
     fields = {  # IMPORTANT: IF THIS IS UPDATED ALSO UPDATE SQL QUERY AND TYPE DICTIONARY BELOW
         "user": "userID",  # user connect ID

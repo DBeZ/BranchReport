@@ -1,5 +1,5 @@
 import pandas as pd
-from shecodesLogin import login
+from user_specific_extractor import login_sql
 from connect_to_database import connect_to_database
 
 
@@ -98,7 +98,7 @@ def last_lesson_query_by_activity_date(connection, mindate, maxdate):
 
 ## Login to database and query to recive all activity enteries in a given date range
 def retrieve_data_by_activity_date(loginFileName, dateStart, dateEnd):
-    loginUsername, password, databaseName, hostName, _, portNumber, _ = login(loginFileName)
+    loginUsername, password, databaseName, hostName, _, portNumber, _ = login_sql(loginFileName)
     connection = connect_to_database(loginUsername, password, databaseName, hostName, portNumber)
     data_df=last_lesson_query_by_activity_date(connection, dateStart, dateEnd)
     return data_df

@@ -4,7 +4,6 @@
 ###############################################################
 
 from user_interface import master_ui
-import datetime as dt
 
 def main():
     master_ui()

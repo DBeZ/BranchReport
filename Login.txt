@@ -1,7 +1,0 @@
-User: shecodes_doreen
-Pass: 6AvTCbB086?(
-Database: shecodes_monster_2_0
-host: c58793.sgvps.net
-IP: 35.214.185.93
-port: 3306
-https://shecodesconnect.com/datashecodes/
