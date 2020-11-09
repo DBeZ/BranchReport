@@ -1,12 +1,16 @@
+#####################################################################################################################
+# Query for getting all activity in daterange, with track, user registration, branch details, and graduation cutoff
+#####################################################################################################################
+
 import pandas as pd
-from user_specific_extractor import login_sql
 from connect_to_database import connect_to_database
+from user_specific_extractor import login_sql
 
 
 # SQL query to receive all activity entries in a given date range
 def last_lesson_query_by_activity_date(connection, mindate, maxdate):
     parameters = (mindate, maxdate)
-    fields_final_display = "userID, dateJoined, lessonDate, 80precent, shortname AS trackName,serial_number AS lessonNo, role, roleID, assignRoleDate, branchName, branchType, active "
+    fields_final_display = "userID, dateJoined, lessonDate, 80precent, shortname AS trackName,serial_number AS lessonNo,   branchName, branchType, active"
 
     fields_updating_progress = "userid_connect, track_id_connect AS trackID,  FROM_UNIXTIME(timestamp, '%Y-%m-%d') AS lessonDate, lesson_id_connect "
     table_updating_progress = "shecodes_monster_2_0.lessons_followup "
@@ -25,20 +29,12 @@ def last_lesson_query_by_activity_date(connection, mindate, maxdate):
     on_branch_type = "branch.branch_type=Branch_Types.branchTypeID "
     on_branch = "branch_ID=BranchID "
 
-    fields_role_final = "user_ID, shortname AS role, roleid as roleID, assignRoleDate "
-    fields_updating_roles = "userid as user_ID , roleid , FROM_UNIXTIME(timemodified, '%Y-%m-%d') AS assignRoleDate "
-    table_updating_roles = "shecodes_shecodes.mdl_role_assignments "
-    table_role_types = "shecodes_shecodes.mdl_role "
-    on_role = "userRoleSubset.roleid=mdl_role.id "
-    condition_role = "roleid NOT IN (8, 21, 23, 24) "
-    on_user2 = "lessonDateTable.userid_connect=user_ID "
-
     table_track = "shecodes_monster_2_0.tracks "
     on_track = "tracks.track_id_connect=lessonDateTable.trackID "
     condition_track = "track_category NOT IN (0,8)	"
     condition_track_type = "track_type NOT IN (0,3) "
     condition_branch_type = "branchTypeID NOT IN (1,9) "
-    condition_track_id = "track_id_connect NOT IN (4,14) "
+    condition_track_id = "track_id_connect NOT IN (14) "
     condition_branch_active = "active IS NOT NULL "
     condition_registration_date_range = "UNIX_TIMESTAMP(lessonDate) BETWEEN UNIX_TIMESTAMP(%s) AND UNIX_TIMESTAMP(%s) "
 
@@ -66,16 +62,6 @@ def last_lesson_query_by_activity_date(connection, mindate, maxdate):
         f") AS Branches "
         f"ON {on_branch} "
 
-        f"left JOIN (SELECT {fields_role_final} "
-        f"FROM (SELECT {fields_updating_roles} "
-        f"FROM {table_updating_roles} "
-        f") AS userRoleSubset "
-        f"RIGHT JOIN {table_role_types} "
-        f"ON {on_role} "
-        f"WHERE {condition_role} "
-        f") AS roles "
-        f"ON {on_user2} "
-
         f"LEFT JOIN {table_track} "
         f"ON {on_track} "
         f"WHERE {condition_track} "
@@ -93,13 +79,39 @@ def last_lesson_query_by_activity_date(connection, mindate, maxdate):
 
     connection.close()
     cursor.close()
-    return query_res_df
+
+    fields_dict = {  # IMPORTANT: IF THIS IS UPDATED ALSO UPDATE SQL QUERY AND TYPE DICTIONARY BELOW
+        "user": "userID",  # user connect ID
+        "registration": "dateJoined",  # date registered to sheconnect
+        "lesson_date": "lessonDate",  # date lesson was taken
+        "graduation_threshold": "80precent",  # lesson no which marks 80% of course milestone
+        "track_name": "trackName",  # short name of the track
+        "lesson_no": "lessonNo",  # lesson number
+        "branch": "branchName",  # short name of the branch
+        "branch_type": "branchType",  # branch type
+        "branch_active": "active"  # 0 if branch is no longer active
+    }
+
+    field_datatpypes_dict = {
+        "user": "int",  # user connect ID
+        "registration": "datetime",  # date registered to sheconnect
+        "lesson_date": "datetime",  # date lesson was taken
+        "graduation_threshold": "int",  # lesson no which marks 80% of course milestone
+        "track_name": "string",  # short name of the track
+        "lesson_no": "int",  # lesson number
+        "branch": "string",  # short name of the branch
+        "branch_type": "string",  # branch type
+        "branch_active": "binary"  # 0 if branch is no longer active
+    }
+    return query_res_df, fields_dict, field_datatpypes_dict
 
 
 ## Login to database and query to recive all activity enteries in a given date range
-def retrieve_data_by_activity_date(loginFileName, dateStart, dateEnd):
-    loginUsername, password, databaseName, hostName, _, portNumber, _ = login_sql(loginFileName)
-    connection = connect_to_database(loginUsername, password, databaseName, hostName, portNumber)
-    data_df=last_lesson_query_by_activity_date(connection, dateStart, dateEnd)
-    return data_df
+def retrieve_data_by_activity_date(sql_details_file_name,  user_specific_dir, dateStart, dateEnd):
+    sql_login_dict = login_sql(sql_details_file_name, user_specific_dir)
+    connection = connect_to_database(sql_login_dict["User"], sql_login_dict["Pass"], sql_login_dict["Database"], sql_login_dict["Host"], sql_login_dict["Port"])
+    print("User activity data being retrieved")
+    data_df, fields_dict, field_datatpypes_dict =last_lesson_query_by_activity_date(connection, dateStart, dateEnd)
+    print("Data retrieval done!")
+    return data_df, fields_dict, field_datatpypes_dict
 

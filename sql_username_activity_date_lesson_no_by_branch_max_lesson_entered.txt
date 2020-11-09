@@ -1,0 +1,68 @@
+SELECT * FROM(
+SELECT
+    userID,
+    firstname_eng,
+    lastname_eng,
+    firstname_heb,
+    lastname_heb,
+    dateJoined,
+	track,
+    lessonDate,
+    80precent,
+    serial_number AS lessonNo,
+    branchName,
+    branchType,
+    active
+FROM
+    (
+    SELECT
+        userid_connect,
+        track_id_connect AS trackID,
+        FROM_UNIXTIME(TIMESTAMP, '%Y-%m-%d') AS lessonDate,
+        lesson_id_connect
+    FROM
+        shecodes_monster_2_0.lessons_followup
+) AS lessonDateTable
+LEFT JOIN(
+    SELECT
+        userid_connect AS userID, firstname_eng, lastname_eng, firstname_heb, lastname_heb,
+        FROM_UNIXTIME(date_joined_lms, '%Y-%m-%d') AS dateJoined,
+        branch_ID AS BranchID
+    FROM
+        shecodes_monster_2_0.users_new
+) AS usersSubset
+ON
+    userid_connect = userID
+LEFT JOIN shecodes_monster_2_0.lessons_mapping ON
+    lessons_mapping.lesson_id_connect = lessonDateTable.lesson_id_connect
+LEFT JOIN(
+    SELECT
+        id AS branch_ID,
+        short_name AS branchName,
+        branchTypeID,
+        branchTypes AS branchType,
+        active
+    FROM
+        (
+        SELECT
+            id AS branchTypeID,
+            branch_type AS branchTypes
+        FROM
+            shecodes_monster_2_0.branch_types
+    ) AS Branch_Types
+RIGHT JOIN shecodes_monster_2_0.branch ON
+    branch.branch_type = Branch_Types.branchTypeID
+) AS Branches
+ON
+    branch_ID = BranchID
+LEFT JOIN shecodes_monster_2_0.tracks ON
+    tracks.track_id_connect = lessonDateTable.trackID
+	
+LEFT JOIN (SELECT ID, track_name as track from shecodes_monster_2_0.track_name) as track ON
+    track.ID = tracks.track_name
+    
+WHERE
+    track_category NOT IN(0, 8) AND track_type NOT IN(0, 3) AND branchTypeID NOT IN(1, 9) AND track_id_connect NOT IN(14) AND active IS NOT NULL AND UNIX_TIMESTAMP(lessonDate) BETWEEN UNIX_TIMESTAMP('2020-01-01') AND UNIX_TIMESTAMP('2020-05-01') AND (branch_ID = 10)
+    ORDER BY lessonNo DESC
+)AS t
+GROUP BY userID, lessondate

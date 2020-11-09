@@ -1,7 +1,18 @@
+####################################################################################
+# Converts inputs into python types, checks dates are legal to sheconnect timeframe
+####################################################################################
+
 import datetime as dt
 from calendar import month_abbr, monthrange
 from re import split
 from collections import Counter
+
+## Get compelete number (such as months, years) from user
+def ask_num():
+    user_input = input()
+    while not user_input.isnumeric():
+        user_input = input()
+    return int(user_input)
 
 ## Check years in range are consecutive
 def year_range_check(yearRange):
@@ -45,7 +56,7 @@ def year_check(input_val, input_converted, flag):
     return input_converted, flag
 
 ## Convert month from name to number
-def month_converet(months):
+def month_to_num_converet(months):
     converted_months=[]
     for month in months:
         month=month.lower()
@@ -55,6 +66,16 @@ def month_converet(months):
             c.update({k.lower(): v})
         monthAbbrivDict = c
         month = int(monthAbbrivDict[month])
+        if month ==0:
+            ask_date_range_month_year()
+        converted_months.append(month)
+    return converted_months
+
+## Convert month from number to name
+def month_to_name_converet(months):
+    converted_months=[]
+    for month in months:
+        month=month_abbr[month]
         if month ==0:
             ask_date_range_month_year()
         converted_months.append(month)
@@ -93,7 +114,7 @@ def ask_date_range_month_year():
             [years_converted, flagYear] = year_check(years, years_converted, flagYear)
             years_converted = year_range_check(years_converted)
             flagMonth=month_check(months, months_converted, flagMonth)
-            months_converted=month_converet(months)
+            months_converted=month_to_num_converet(months)
             min_date = dt.date(years_converted[0], months_converted[0], 1)
             days_in_max_month = monthrange(years_converted[-1], months_converted[-1])
             max_date = dt.date(years_converted[-1], months_converted[-1], days_in_max_month[1])

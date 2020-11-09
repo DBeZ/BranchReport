@@ -1,0 +1,18 @@
+SELECT
+    user_ID,
+    shortname AS role,
+    roleid AS roleID,
+    assignRoleDate
+FROM
+    (
+    SELECT
+        userid AS user_ID,
+        roleid,
+        FROM_UNIXTIME(timemodified, '%Y-%m-%d') AS assignRoleDate
+    FROM
+        shecodes_shecodes.mdl_role_assignments
+) AS userRoleSubset
+RIGHT JOIN shecodes_shecodes.mdl_role ON
+    userRoleSubset.roleid = mdl_role.id
+WHERE
+    user_ID IS NOT NULL
